@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aula</title>
+<meta name="description" content="Tu aula de estudio: lecciones, repaso espaciado y diario.">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="vendor/github-dark.min.css">
+<style>
+  :root {
+    --bg: #f5f6f8; --surface: #ffffff; --surface2: #eef1f4; --text: #15202b; --muted: #5a6672;
+    --border: #dde2e8; --brand: #0f766e; --brand-ink: #ffffff; --brand-soft: #d6f1ec;
+    --ok: #15803d; --ok-soft: #dcfce7; --bad: #b42318; --bad-soft: #fee4e2;
+    --warn: #93600a; --warn-soft: #fdf1d0; --info: #075985; --info-soft: #e0f2fe;
+    --radius: 14px; --shadow: 0 1px 2px rgba(16,24,40,.05), 0 4px 16px rgba(16,24,40,.06);
+    --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1318; --surface: #141c23; --surface2: #1b252e; --text: #e5ecf2; --muted: #92a0ad;
+      --border: #25313c; --brand: #2dd4bf; --brand-ink: #062320; --brand-soft: #0f302c;
+      --ok: #4ade80; --ok-soft: #102f1c; --bad: #f87171; --bad-soft: #3a1717;
+      --warn: #fbbf24; --warn-soft: #33270b; --info: #7dd3fc; --info-soft: #0b2a3a; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body { font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  .boot { padding: 40px 16px; text-align: center; color: #888; }
+  .app { max-width: 760px; margin: 0 auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: .2em 0 .3em; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; line-height: 1.3; margin: 1.2em 0 .5em; }
+  h3 { font-size: 1.05rem; margin: .2em 0 .4em; }
+  p { margin: .5em 0; }
+  a { color: var(--brand); }
+  .muted { color: var(--muted); }
+  .small { font-size: .875rem; }
+  .eyebrow { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; font-weight: 600; }
+  .lead { font-size: 1.05rem; color: var(--muted); }
+  .hero { padding: 8px 0 4px; }
+  .page-head { margin-bottom: 8px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin: 12px 0; box-shadow: var(--shadow); }
+  .card.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .card.row > div { min-width: 0; }
+  .card h2:first-child, .card h3:first-child { margin-top: 0; }
+  .continue { border-color: var(--brand); }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 8px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+  .stat .v { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+  .stat .l { font-size: .75rem; color: var(--muted); }
+  .stat .s { font-size: .72rem; color: var(--muted); }
+  .progress { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .progress > div { height: 100%; background: var(--brand); border-radius: 99px; transition: width .3s; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 16px; border-radius: 10px;
+         border: 1px solid var(--border); background: var(--surface2); cursor: pointer; font-weight: 600; white-space: nowrap; }
+  .btn:hover { filter: brightness(.97); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.primary { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+  .btn.danger { color: var(--bad); border-color: var(--bad); background: transparent; }
+  .btn.block { width: 100%; }
+  .btn.sm { min-height: 36px; padding: 4px 12px; font-size: .9rem; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .link { background: none; border: 0; color: var(--brand); cursor: pointer; padding: 8px 4px; font-weight: 600; }
+
+  .backbar { display: flex; align-items: center; justify-content: space-between; margin: -4px 0 4px; }
+  .group-title { font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 20px 0 8px; }
+  .lesson-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .lesson-row { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; background: var(--surface); border: 1px solid var(--border);
+                border-radius: 12px; padding: 12px; cursor: pointer; }
+  .lesson-row.current { border-color: var(--brand); }
+  .lesson-row .num { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--surface2); }
+  .lesson-row.done .num { background: var(--ok-soft); color: var(--ok); }
+  .lesson-row.current .num { background: var(--brand); color: var(--brand-ink); }
+  .lr-text { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+  .lr-title { font-weight: 600; }
+  .lr-sub { font-size: .85rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .pill { flex: none; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--brand-soft); color: var(--brand); }
+
+  .section { margin-top: 8px; }
+  .section-title { border-top: 1px solid var(--border); padding-top: 18px; }
+  .block { margin: 12px 0; }
+  .tag { display: inline-block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--brand); margin-bottom: 4px; }
+  .caption { font-size: .85rem; color: var(--muted); margin: 0 0 4px; }
+  .md :first-child { margin-top: 0; }
+  .md :last-child { margin-bottom: 0; }
+  .md ul, .md ol { padding-left: 1.3em; margin: .5em 0; }
+  .md li { margin: .25em 0; }
+  .md blockquote { margin: .8em 0; padding: 8px 12px; border-left: 3px solid var(--brand); background: var(--surface2); border-radius: 0 8px 8px 0; }
+  .md h3, .md h4 { margin-top: 1.1em; }
+  code { font-family: var(--mono); font-size: .88em; background: var(--surface2); padding: .1em .35em; border-radius: 5px; overflow-wrap: anywhere; }
+  .codewrap { position: relative; }
+  pre.code, .md pre { margin: 0; background: #0d1117; color: #e6edf3; border-radius: 10px; padding: 14px; overflow-x: auto; font-size: .86rem; line-height: 1.5; }
+  pre.code code, .md pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+  .codewrap pre.code { padding-top: 40px; }
+  .copy { position: absolute; top: 6px; right: 6px; font-size: .75rem; padding: 4px 8px; border-radius: 6px; border: 1px solid #30363d; background: #161b22; color: #c9d1d9; cursor: pointer; }
+
+  .callout { border-radius: 12px; padding: 12px 14px; margin: 12px 0; border: 1px solid transparent; }
+  .callout.info { background: var(--info-soft); }
+  .callout.warn { background: var(--warn-soft); }
+  .task { border-left: 4px solid var(--brand); }
+
+  textarea, input[type=text], input[type=number] { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  textarea { resize: vertical; min-height: 80px; }
+  textarea.mono { font-family: var(--mono); font-size: .85rem; min-height: 360px; }
+  label.field { display: block; margin: 10px 0; }
+  label.field > span { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 4px; }
+  .answer { margin-top: 10px; padding: 12px; border-radius: 10px; background: var(--surface2); }
+  .answer.good { background: var(--ok-soft); }
+  .answer.wrong { background: var(--bad-soft); }
+  .predict .codewrap { margin: 8px 0; }
+  .predict textarea { margin: 8px 0; }
+  .options { display: grid; gap: 8px; margin-top: 8px; }
+  .opt { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; min-height: 44px; }
+  .opt.ok { border-color: var(--ok); background: var(--ok-soft); }
+  .opt.bad { border-color: var(--bad); background: var(--bad-soft); }
+  .opt:disabled { cursor: default; }
+  .checks { list-style: none; padding: 0; margin: 4px 0 0; }
+  .checks li { padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .checks li:last-child { border-bottom: 0; }
+  .checks label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+  .checks input { width: 20px; height: 20px; margin-top: 3px; flex: none; accent-color: var(--brand); }
+  .finish { text-align: center; margin-top: 24px; }
+
+  .flash { min-height: 220px; display: flex; flex-direction: column; justify-content: center; }
+  .flash .q { font-size: 1.1rem; font-weight: 600; }
+  .grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .entry { white-space: pre-wrap; }
+  .entry dt { font-weight: 600; font-size: .85rem; margin-top: 8px; }
+  .entry dd { margin: 0; }
+  details summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+  .err { white-space: pre-wrap; color: var(--bad); background: var(--bad-soft); padding: 10px 12px; border-radius: 10px; font-size: .9rem; }
+  .list-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .list-row:last-child { border-bottom: 0; }
+  .list-row .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--border);
+          display: grid; grid-template-columns: repeat(5, 1fr); padding-bottom: env(safe-area-inset-bottom); z-index: 10; }
+  .tabs button { background: none; border: 0; padding: 8px 2px 10px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+                 font-size: .72rem; color: var(--muted); cursor: pointer; position: relative; min-height: 56px; }
+  .tabs button.on { color: var(--brand); font-weight: 700; }
+  .tabs svg { width: 22px; height: 22px; }
+  .badge { position: absolute; top: 4px; left: calc(50% + 6px); background: var(--bad); color: #fff; font-size: .65rem; font-weight: 700; border-radius: 99px; padding: 0 6px; line-height: 16px; }
+  .toast { position: fixed; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--text); color: var(--bg);
+           padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: .9rem; z-index: 20; max-width: calc(100% - 32px); }
+  .banner { padding: 10px 16px; text-align: center; font-weight: 600; font-size: .9rem; }
+  .banner.bad { background: var(--bad-soft); color: var(--bad); }
+  @media (max-width: 380px) { .stats { gap: 6px; } .stat { padding: 8px; } .stat .v { font-size: 1.1rem; } }
+</style>
+</head>
+<body>
+<div id="root"><div class="boot">Cargando Aula…</div></div>
+
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="vendor/babel.min.js"></script>
+<script src="vendor/highlight.min.js"></script>
+<script src="seed.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef } = React;
+
+/* ---------- Constantes y utilidades ---------- */
+const STORE_KEY = 'aula.v1';
+const DAY = 86400000;
+const INTERVALS = [0, 1, 3, 7, 16, 35];          // días por caja (sistema Leitner)
+const BLOCK_TYPES = ['md', 'code', 'primm', 'recall', 'quiz', 'checklist', 'task', 'callout'];
+const MAX_IMPORT = 2 * 1024 * 1024;               // 2 MB
+const JOURNAL_FIELDS = [
+  { key: 'built', label: 'Qué construí' },
+  { key: 'learned', label: 'Qué aprendí (en mis palabras)' },
+  { key: 'confused', label: 'Qué me confundió todavía' },
+  { key: 'ai', label: 'Qué le pedí a la IA y qué tuve que corregir' },
+  { key: 'security', label: 'Riesgo de seguridad que encontré o evité' }
+];
+
+const pad = n => String(n).padStart(2, '0');
+const localDay = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const startOfDay = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36);
+const pkey = (cid, lid) => `${cid}::${lid}`;
+const fmtDate = ts => new Date(ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+const blockId = (b, si, bi) => b.id || `${si}-${bi}`;
+const stripMd = s => String(s || '').replace(/[*`>#_]/g, '').replace(/\s+/g, ' ').trim();
+const sortedLessons = c => [...((c && c.lessons) || [])].sort((a, b) => (a.week ?? 999) - (b.week ?? 999));
+const isDone = (state, cid, lid) => !!(state.progress[pkey(cid, lid)] || {}).completedAt;
+const nextLesson = (state, c) => sortedLessons(c).find(l => !isDone(state, c.id, l.id)) || null;
+
+function streakOf(days) {
+  const set = new Set(days);
+  let d = new Date(), n = 0;
+  if (!set.has(localDay(d))) d = new Date(d.getTime() - DAY);
+  while (set.has(localDay(d))) { n++; d = new Date(d.getTime() - DAY); }
+  return n;
+}
+
+/* ---------- Markdown mínimo y SEGURO ----------
+   Todo el texto se escapa ANTES de convertirlo en HTML. Así, aunque un curso
+   importado traiga <script>, se muestra como texto y no se ejecuta (anti-XSS). */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function inline(s) {
+  return s
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\s][^*]*?)\*/g, '$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+function mdToHtml(src) {
+  const lines = String(src || '').replace(/\r/g, '').split('\n');
+  let html = '', list = null, inCode = false, code = [], para = [];
+  const flush = () => { if (para.length) { html += '<p>' + inline(escapeHtml(para.join(' '))) + '</p>'; para = []; } };
+  const closeList = () => { if (list) { html += `</${list}>`; list = null; } };
+  for (const line of lines) {
+    if (inCode) {
+      if (line.startsWith('```')) { html += '<pre><code>' + escapeHtml(code.join('\n')) + '</code></pre>'; code = []; inCode = false; }
+      else code.push(line);
+      continue;
+    }
+    let m;
+    if (line.startsWith('```')) { flush(); closeList(); inCode = true; continue; }
+    if ((m = line.match(/^(#{1,4})\s+(.*)/))) { flush(); closeList(); const n = Math.min(m[1].length + 1, 5); html += `<h${n}>${inline(escapeHtml(m[2]))}</h${n}>`; continue; }
+    if ((m = line.match(/^\s*[-*]\s+(.*)/))) { flush(); if (list !== 'ul') { closeList(); html += '<ul>'; list = 'ul'; } html += '<li>' + inline(escapeHtml(m[1])) + '</li>'; continue; }
+    if ((m = line.match(/^\s*\d+[.)]\s+(.*)/))) { flush(); if (list !== 'ol') { closeList(); html += '<ol>'; list = 'ol'; } html += '<li>' + inline(escapeHtml(m[1])) + '</li>'; continue; }
+    if ((m = line.match(/^>\s?(.*)/))) { flush(); closeList(); html += '<blockquote>' + inline(escapeHtml(m[1])) + '</blockquote>'; continue; }
+    if (!line.trim()) { flush(); closeList(); continue; }
+    closeList(); para.push(line.trim());
+  }
+  if (inCode) html += '<pre><code>' + escapeHtml(code.join('\n')) + '</code></pre>';
+  flush(); closeList();
+  return html;
+}
+
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch (e) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy'); ta.remove(); return ok;
+    } catch (e2) { return false; }
+  }
+}
+function download(name, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const readFile = file => new Promise((res, rej) => {
+  if (file.size > MAX_IMPORT) return rej(new Error('El archivo es demasiado grande (máx. 2 MB).'));
+  const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = () => rej(new Error('No se pudo leer el archivo.')); r.readAsText(file);
+});
+
+/* ---------- Estado persistente ---------- */
+const BASE_STATE = { name: '', courses: [], progress: {}, cards: [], journal: [], studyDays: [], activeCourseId: null };
+
+function normalize(s) {
+  const out = { ...BASE_STATE, ...(s || {}) };
+  for (const k of ['courses', 'cards', 'journal', 'studyDays']) if (!Array.isArray(out[k])) out[k] = [];
+  if (!out.progress || typeof out.progress !== 'object') out.progress = {};
+  return out;
+}
+function loadState() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { saved = null; }
+  const s = normalize(saved);
+  const seed = window.SEED_COURSE;
+  if (seed) {
+    const i = s.courses.findIndex(c => c.id === seed.id);
+    if (i === -1) s.courses = [...s.courses, seed];
+    else if ((s.courses[i].version || 0) < (seed.version || 0) && !s.courses[i].edited) s.courses = s.courses.map((c, j) => j === i ? seed : c);
+  }
+  if (!s.courses.some(c => c.id === s.activeCourseId)) s.activeCourseId = s.courses[0] ? s.courses[0].id : null;
+  return s;
+}
+function addCards(s, course, lesson) {
+  const have = new Set(s.cards.map(c => c.id));
+  const now = Date.now();
+  const add = (lesson.cards || [])
+    .map((c, i) => ({ id: `${course.id}::${lesson.id}::${i}`, courseId: course.id, lessonId: lesson.id, q: String(c.q || ''), a: String(c.a || ''), box: 0, due: now }))
+    .filter(c => !have.has(c.id) && c.q);
+  return add.length ? { ...s, cards: [...s.cards, ...add] } : s;
+}
+
+/* ---------- Validación de cursos importados ---------- */
+function validateLesson(l, prefix = '') {
+  const e = [];
+  if (!l || typeof l !== 'object' || Array.isArray(l)) return [prefix + 'La lección no es un objeto.'];
+  if (!l.id || typeof l.id !== 'string') e.push(prefix + 'Falta "id" (texto).');
+  if (!l.title) e.push(prefix + 'Falta "title".');
+  if (!Array.isArray(l.sections)) e.push(prefix + '"sections" debe ser una lista.');
+  else l.sections.forEach((s, i) => {
+    if (!s || !Array.isArray(s.blocks)) { e.push(`${prefix}Sección ${i + 1}: "blocks" debe ser una lista.`); return; }
+    s.blocks.forEach((b, j) => {
+      const at = `${prefix}Sección ${i + 1}, bloque ${j + 1}: `;
+      if (!b || !BLOCK_TYPES.includes(b.type)) { e.push(at + `tipo "${b && b.type}" no existe. Usa: ${BLOCK_TYPES.join(', ')}.`); return; }
+      if (b.type === 'quiz' && (!Array.isArray(b.options) || typeof b.correct !== 'number' || b.correct < 0 || b.correct >= b.options.length)) e.push(at + 'el quiz necesita "options" (lista) y "correct" (número dentro de la lista).');
+      if (b.type === 'checklist' && !Array.isArray(b.items)) e.push(at + 'la checklist necesita "items" (lista).');
+      if ((b.type === 'primm' || b.type === 'recall') && (!b.question || !b.answer)) e.push(at + 'necesita "question" y "answer".');
+      if (b.type === 'code' && typeof b.code !== 'string') e.push(at + 'necesita "code" (texto).');
+    });
+  });
+  if (l.cards != null && !Array.isArray(l.cards)) e.push(prefix + '"cards" debe ser una lista.');
+  return e;
+}
+function validateCourse(c) {
+  if (!c || typeof c !== 'object' || Array.isArray(c)) return ['El curso no es un objeto.'];
+  const e = [];
+  if (!c.id || typeof c.id !== 'string') e.push('Falta "id" del curso (texto).');
+  if (!c.title) e.push('Falta "title" del curso.');
+  if (!Array.isArray(c.lessons)) e.push('"lessons" debe ser una lista.');
+  else {
+    const ids = new Set();
+    c.lessons.forEach((l, i) => {
+      e.push(...validateLesson(l, `Lección ${i + 1}: `));
+      if (l && l.id) { if (ids.has(l.id)) e.push(`Lección ${i + 1}: el id "${l.id}" está repetido.`); ids.add(l.id); }
+    });
+  }
+  return e;
+}
+function importJson(text, state) {
+  if (text.length > MAX_IMPORT) throw new Error('El contenido es demasiado grande (máx. 2 MB).');
+  let data;
+  try { data = JSON.parse(text); } catch (err) { throw new Error('No es un JSON válido: ' + err.message); }
+  const fail = errs => { throw new Error(errs.slice(0, 8).join('\n') + (errs.length > 8 ? `\n…y ${errs.length - 8} errores más.` : '')); };
+
+  if (data && data.type === 'backup') {
+    const s = normalize(data.data);
+    const errs = s.courses.flatMap(c => validateCourse(c).map(m => `[${c.title || c.id}] ${m}`));
+    if (errs.length) fail(errs);
+    if (!s.courses.some(c => c.id === s.activeCourseId)) s.activeCourseId = s.courses[0] ? s.courses[0].id : null;
+    return { state: s, msg: 'Respaldo restaurado', replaceAll: true };
+  }
+  if (data && data.type === 'lesson') {
+    const cid = data.courseId || state.activeCourseId;
+    const c = state.courses.find(x => x.id === cid);
+    if (!c) throw new Error(`No existe el curso "${cid}". Impórtalo o actívalo primero.`);
+    const errs = validateLesson(data.lesson); if (errs.length) fail(errs);
+    const exists = c.lessons.some(l => l.id === data.lesson.id);
+    const courses = state.courses.map(x => x.id !== cid ? x : {
+      ...x, edited: true,
+      lessons: exists ? x.lessons.map(l => l.id === data.lesson.id ? data.lesson : l) : [...x.lessons, data.lesson]
+    });
+    return { state: { ...state, courses }, msg: `${exists ? 'Lección actualizada' : 'Lección agregada'}: ${data.lesson.title}` };
+  }
+  const errs = validateCourse(data); if (errs.length) fail(errs);
+  const exists = state.courses.some(c => c.id === data.id);
+  const course = { ...data, edited: true };
+  const courses = exists ? state.courses.map(c => c.id === data.id ? course : c) : [...state.courses, course];
+  return { state: { ...state, courses, activeCourseId: state.activeCourseId || data.id }, msg: `${exists ? 'Curso actualizado' : 'Curso importado'}: ${data.title}` };
+}
+
+/* ---------- Resumen para pegarle a Claude ---------- */
+function buildSummary(state, course) {
+  const L = [`## Resumen de Aula — ${localDay()}`];
+  if (course) {
+    const ls = sortedLessons(course);
+    const done = ls.filter(l => isDone(state, course.id, l.id)).length;
+    const next = nextLesson(state, course);
+    L.push(`- Curso: ${course.title}`, `- Lecciones completadas: ${done}/${ls.length}`, `- Siguiente: ${next ? `Semana ${next.week} — ${next.title}` : 'curso terminado'}`);
+  }
+  const st = streakOf(state.studyDays);
+  L.push(`- Racha: ${st} ${st === 1 ? 'día' : 'días'}`, `- Tarjetas por repasar: ${state.cards.filter(c => c.due <= Date.now()).length} de ${state.cards.length}`);
+
+  let lastKey = null, lastAt = 0;
+  for (const [k, p] of Object.entries(state.progress)) if ((p.updatedAt || 0) > lastAt) { lastAt = p.updatedAt; lastKey = k; }
+  if (lastKey) {
+    const [cid, lid] = lastKey.split('::');
+    const c = state.courses.find(x => x.id === cid);
+    const l = c && c.lessons.find(x => x.id === lid);
+    const p = state.progress[lastKey];
+    if (l) {
+      L.push('', `### Última lección trabajada: Semana ${l.week ?? '?'} — ${l.title}${p.completedAt ? ' (completada)' : ''}`);
+      let ok = 0, total = 0; const answers = [], checks = [];
+      (l.sections || []).forEach((s, si) => (s.blocks || []).forEach((b, bi) => {
+        const id = blockId(b, si, bi);
+        if (b.type === 'quiz' && p.quiz && p.quiz[id] != null) { total++; if (p.quiz[id] === b.correct) ok++; }
+        if ((b.type === 'primm' || b.type === 'recall') && p.answers && p.answers[id]) answers.push(`- **${stripMd(b.question)}**\n  Mi respuesta: ${p.answers[id]}`);
+        if (b.type === 'checklist') (b.items || []).forEach((it, i) => checks.push(`- [${p.checks && p.checks[id] && p.checks[id][i] ? 'x' : ' '}] ${stripMd(it)}`));
+      }));
+      if (total) L.push(`- Quizzes: ${ok}/${total} correctos`);
+      if (checks.length) L.push('', '**Checklist:**', ...checks);
+      if (answers.length) L.push('', '**Mis respuestas (para que Claude las revise):**', ...answers);
+    }
+  }
+  const j = [...state.journal].sort((a, b) => b.createdAt - a.createdAt)[0];
+  if (j) L.push('', `### Última entrada del diario (semana ${j.week})`, ...JOURNAL_FIELDS.map(f => `- ${f.label}: ${j[f.key] || '—'}`));
+  return L.join('\n');
+}
+
+/* ---------- Componentes base ---------- */
+const ICONS = {
+  home: 'M3 11l9-8 9 8M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5',
+  program: 'M4 5a2 2 0 0 1 2-2h5v17H6a2 2 0 0 0-2 2zM20 5a2 2 0 0 0-2-2h-5v17h5a2 2 0 0 1 2 2z',
+  review: 'M7 4h11a2 2 0 0 1 2 2v11M4 8h11a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z',
+  journal: 'M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4',
+  more: 'M5 12h.01M12 12h.01M19 12h.01'
+};
+function Icon({ name }) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={name === 'more' ? 3.2 : 1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICONS[name]} /></svg>;
+}
+function Md({ text, inline: isInline }) {
+  const html = useMemo(() => isInline ? inline(escapeHtml(text || '')) : mdToHtml(text), [text, isInline]);
+  return isInline ? <span dangerouslySetInnerHTML={{ __html: html }} /> : <div className="md" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+function Code({ code, lang, notify }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    el.textContent = code || '';
+    el.className = lang ? 'language-' + lang : '';
+    el.removeAttribute('data-highlighted');
+    if (window.hljs && lang && lang !== 'plaintext' && hljs.getLanguage(lang)) { try { hljs.highlightElement(el); } catch (e) {} }
+  }, [code, lang]);
+  return <div className="codewrap">
+    <pre className="code"><code ref={ref} /></pre>
+    <button className="copy" onClick={async () => { const ok = await copyText(code || ''); notify && notify(ok ? 'Código copiado' : 'No se pudo copiar'); }}>Copiar</button>
+  </div>;
+}
+function BackBar({ onBack, right }) {
+  return <div className="backbar"><button className="link" onClick={onBack}>← Volver</button>{right}</div>;
+}
+function Stat({ label, value, sub }) {
+  return <div className="stat"><div className="v">{value}</div><div className="l">{label}</div>{sub && <div className="s">{sub}</div>}</div>;
+}
+
+/* ---------- Bloques de lección ---------- */
+function Predict({ b, value, revealed, onChange, onReveal, onHide, notify }) {
+  return <div className="card block predict">
+    <div className="tag">{b.type === 'primm' ? 'Predice' : 'Recupera'}</div>
+    {b.code && <Code code={b.code} lang={b.lang || 'kotlin'} notify={notify} />}
+    <Md text={b.question} />
+    <textarea value={value} onChange={e => onChange(e.target.value)} rows={3} placeholder="Escribe tu respuesta antes de ver la solución…" aria-label="Tu respuesta" />
+    {!revealed
+      ? <button className="btn" disabled={!value.trim()} onClick={onReveal}>{value.trim() ? 'Ver respuesta' : 'Escribe primero para ver la respuesta'}</button>
+      : <><div className="answer"><Md text={b.answer} /></div><button className="link" onClick={onHide}>Ocultar respuesta</button></>}
+  </div>;
+}
+function Quiz({ b, chosen, onChoose }) {
+  const done = chosen !== undefined && chosen !== null;
+  return <div className="card block">
+    <div className="tag">Quiz</div>
+    <Md text={b.question} />
+    <div className="options">
+      {b.options.map((o, i) => {
+        let cls = 'opt';
+        if (done) { if (i === b.correct) cls += ' ok'; else if (i === chosen) cls += ' bad'; }
+        return <button key={i} className={cls} disabled={done} onClick={() => onChoose(i)}><Md text={o} inline /></button>;
+      })}
+    </div>
+    {done && <div className={'answer ' + (chosen === b.correct ? 'good' : 'wrong')}>
+      <p><strong>{chosen === b.correct ? '¡Correcto!' : 'No era esa.'}</strong></p>
+      {b.explain && <Md text={b.explain} />}
+    </div>}
+    {done && <button className="link" onClick={() => onChoose(null)}>Intentar de nuevo</button>}
+  </div>;
+}
+function BlockView({ b, id, p, setP, notify }) {
+  switch (b.type) {
+    case 'md': return <div className="block"><Md text={b.text} /></div>;
+    case 'code': return <div className="block">{b.caption && <p className="caption">{b.caption}</p>}<Code code={b.code} lang={b.lang} notify={notify} /></div>;
+    case 'callout': return <div className={'callout ' + (b.tone === 'warn' ? 'warn' : 'info')}><Md text={b.text} /></div>;
+    case 'task': return <div className="card task"><div className="tag">Tarea</div>{b.title && <h3>{b.title}</h3>}<Md text={b.text} /></div>;
+    case 'primm':
+    case 'recall': {
+      const setRev = v => setP(cur => ({ ...cur, revealed: { ...(cur.revealed || {}), [id]: v } }), v);
+      return <Predict b={b} notify={notify}
+        value={(p.answers || {})[id] || ''} revealed={!!(p.revealed || {})[id]}
+        onChange={v => setP(cur => ({ ...cur, answers: { ...(cur.answers || {}), [id]: v } }))}
+        onReveal={() => setRev(true)} onHide={() => setRev(false)} />;
+    }
+    case 'quiz': return <Quiz b={b} chosen={(p.quiz || {})[id]} onChoose={i => setP(cur => ({ ...cur, quiz: { ...(cur.quiz || {}), [id]: i } }))} />;
+    case 'checklist': {
+      const ch = (p.checks || {})[id] || {};
+      const toggle = (i, v) => setP(cur => ({ ...cur, checks: { ...(cur.checks || {}), [id]: { ...((cur.checks || {})[id] || {}), [i]: v } } }));
+      const n = (b.items || []).filter((_, i) => ch[i]).length;
+      return <div className="card block">
+        <div className="tag">Checklist · {n}/{(b.items || []).length}</div>
+        {b.title && <h3>{b.title}</h3>}
+        <ul className="checks">{(b.items || []).map((it, i) =>
+          <li key={i}><label><input type="checkbox" checked={!!ch[i]} onChange={e => toggle(i, e.target.checked)} /><span><Md text={it} inline /></span></label></li>)}
+        </ul>
+      </div>;
+    }
+    default: return <div className="callout warn">Bloque desconocido: {String(b.type)}</div>;
+  }
+}
+
+/* ---------- Pantallas ---------- */
+function greeting(name) {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+  return name ? `${g}, ${name}` : g;
+}
+
+function Home({ state, go, goTab, notify, course, dueCount }) {
+  const ls = sortedLessons(course);
+  const done = course ? ls.filter(l => isDone(state, course.id, l.id)).length : 0;
+  const next = course ? nextLesson(state, course) : null;
+  const streak = streakOf(state.studyDays);
+  const pct = ls.length ? Math.round(done * 100 / ls.length) : 0;
+  return <>
+    <header className="hero">
+      <p className="eyebrow">{course ? course.title : 'Aula'}</p>
+      <h1>{greeting(state.name)}</h1>
+    </header>
+    <section className="stats" aria-label="Resumen">
+      <Stat label="Racha" value={`${streak} ${streak === 1 ? 'día' : 'días'}`} />
+      <Stat label="Progreso" value={`${pct}%`} sub={`${done}/${ls.length} lecciones`} />
+      <Stat label="Por repasar" value={dueCount} sub="tarjetas" />
+    </section>
+    <div className="progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><div style={{ width: pct + '%' }} /></div>
+
+    {!course && <article className="card"><h2>No tienes un curso activo</h2><p className="muted">Crea uno o importa un curso en la pestaña Más.</p><button className="btn" onClick={() => goTab({ name: 'more' })}>Ir a Más</button></article>}
+    {course && next && <article className="card continue">
+      <p className="eyebrow">Semana {next.week ?? '—'}{next.phase ? ` · ${next.phase}` : ''}</p>
+      <h2 style={{ marginTop: 4 }}>{next.title}</h2>
+      {next.summary && <p className="muted">{next.summary}</p>}
+      <button className="btn primary" onClick={() => go({ name: 'lesson', cid: course.id, lid: next.id })}>{state.progress[pkey(course.id, next.id)] ? 'Continuar' : 'Empezar'}</button>
+    </article>}
+    {course && !next && ls.length > 0 && <article className="card continue"><h2>¡Curso completado!</h2><p className="muted">Terminaste todas las lecciones. Sigue con el repaso para que no se te olvide.</p></article>}
+
+    <article className="card row">
+      <div><h3>Repaso</h3><p className="muted small">{dueCount ? `${dueCount} ${dueCount === 1 ? 'tarjeta espera' : 'tarjetas esperan'} hoy` : 'Nada pendiente hoy'}</p></div>
+      <button className="btn" onClick={() => goTab({ name: 'review' })}>Repasar</button>
+    </article>
+    <article className="card">
+      <h3>Cerrar sesión con Claude</h3>
+      <p className="muted small">Copia un resumen de tu avance (respuestas, quizzes, checklist y diario) y pégalo en el chat del proyecto. Así Claude revisa tus respuestas y actualiza la memoria.</p>
+      <button className="btn" onClick={async () => { const ok = await copyText(buildSummary(state, course)); notify(ok ? 'Resumen copiado. Pégalo en el chat.' : 'No se pudo copiar'); }}>Copiar resumen para Claude</button>
+    </article>
+  </>;
+}
+
+function Program({ state, go, goTab, course }) {
+  if (!course) return <><h1>Programa</h1><p className="muted">No hay curso activo.</p><button className="btn" onClick={() => goTab({ name: 'more' })}>Ir a Más</button></>;
+  const ls = sortedLessons(course);
+  const groups = [];
+  ls.forEach(l => { const name = l.phase || 'Lecciones'; let g = groups.find(x => x.name === name); if (!g) { g = { name, items: [] }; groups.push(g); } g.items.push(l); });
+  const next = nextLesson(state, course);
+  return <>
+    <header className="page-head">
+      <p className="eyebrow">Programa</p>
+      <h1>{course.title}</h1>
+      {course.description && <p className="muted">{course.description}</p>}
+    </header>
+    {groups.map(g => <section key={g.name}>
+      <h2 className="group-title">{g.name}</h2>
+      <ul className="lesson-list">{g.items.map(l => {
+        const p = state.progress[pkey(course.id, l.id)];
+        const st = p && p.completedAt ? 'done' : next && next.id === l.id ? 'current' : p ? 'started' : 'todo';
+        return <li key={l.id}>
+          <button className={'lesson-row ' + st} onClick={() => go({ name: 'lesson', cid: course.id, lid: l.id })}>
+            <span className="num" aria-hidden="true">{st === 'done' ? '✓' : (l.week ?? '•')}</span>
+            <span className="lr-text">
+              <span className="lr-title">{l.title}</span>
+              <span className="lr-sub">{l.draft ? 'Por cargar · ' : ''}{l.summary}</span>
+            </span>
+            {st === 'current' && <span className="pill">Ahora</span>}
+          </button>
+        </li>;
+      })}</ul>
+    </section>)}
+  </>;
+}
+
+function Lesson({ state, update, back, go, notify, markStudy, cid, lid }) {
+  const course = state.courses.find(c => c.id === cid);
+  const lesson = course && course.lessons.find(l => l.id === lid);
+  if (!lesson) return <><BackBar onBack={back} /><p>No se encontró la lección.</p></>;
+  const key = pkey(cid, lid);
+  const p = state.progress[key] || {};
+  const setP = (fn, study = true) => update(s => {
+    const next = { ...fn(s.progress[key] || {}), updatedAt: Date.now() };
+    const s2 = { ...s, progress: { ...s.progress, [key]: next } };
+    return study ? markStudy(s2) : s2;
+  });
+  const complete = () => {
+    update(s => markStudy(addCards({ ...s, progress: { ...s.progress, [key]: { ...(s.progress[key] || {}), completedAt: Date.now(), updatedAt: Date.now() } } }, course, lesson)));
+    const n = (lesson.cards || []).length;
+    notify(n ? `¡Lección completa! ${n} tarjetas pasaron a Repaso.` : '¡Lección completa!');
+  };
+  const reopen = () => setP(cur => { const { completedAt, ...rest } = cur; return rest; }, false);
+  return <>
+    <BackBar onBack={back} right={<button className="link" onClick={() => go({ name: 'edit', cid, lid })}>Editar</button>} />
+    <header className="page-head">
+      <p className="eyebrow">{lesson.week != null ? `Semana ${lesson.week}` : 'Lección'}{lesson.phase ? ` · ${lesson.phase}` : ''}</p>
+      <h1>{lesson.title}</h1>
+      {lesson.summary && <p className="lead">{lesson.summary}</p>}
+      {lesson.minutes ? <p className="muted small">Tiempo estimado: ≈ {Math.round(lesson.minutes / 6) / 10} h</p> : null}
+    </header>
+    {(lesson.sections || []).map((s, si) => <section key={si} className="section">
+      {s.title && <h2 className="section-title">{s.title}</h2>}
+      {(s.blocks || []).map((b, bi) => <BlockView key={bi} b={b} id={blockId(b, si, bi)} p={p} setP={setP} notify={notify} />)}
+    </section>)}
+    <section className="card finish">
+      {(lesson.cards || []).length > 0 && <p className="muted small">Esta lección trae {lesson.cards.length} tarjetas de repaso.</p>}
+      {p.completedAt
+        ? <><p><strong>Completada</strong> el {fmtDate(p.completedAt)}.</p><button className="btn" onClick={reopen}>Marcar como pendiente</button></>
+        : <button className="btn primary block" onClick={complete}>Marcar lección como completa</button>}
+    </section>
+  </>;
+}
+
+function Review({ state, update, notify, markStudy, course }) {
+  const [now, setNow] = useState(Date.now());
+  const [show, setShow] = useState(false);
+  const [q, setQ] = useState(''); const [a, setA] = useState('');
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(t); }, []);
+  const due = state.cards.filter(c => c.due <= now).sort((x, y) => x.due - y.due);
+  const card = due[0];
+  const upcoming = state.cards.filter(c => c.due > now).sort((x, y) => x.due - y.due)[0];
+
+  const grade = g => {
+    update(s => markStudy({
+      ...s, cards: s.cards.map(c => {
+        if (c.id !== card.id) return c;
+        let box = c.box || 0, dueAt;
+        if (g === 'again') { box = 0; dueAt = Date.now() + 10 * 60 * 1000; }
+        else { box = Math.min(box + (g === 'easy' ? 2 : 1), INTERVALS.length - 1); dueAt = startOfDay() + INTERVALS[box] * DAY; }
+        return { ...c, box, due: dueAt, reviews: (c.reviews || 0) + 1 };
+      })
+    }));
+    setShow(false); setNow(Date.now());
+  };
+  const addCard = () => {
+    if (!q.trim() || !a.trim()) return;
+    update(s => ({ ...s, cards: [...s.cards, { id: 'manual::' + uid(), courseId: course ? course.id : null, lessonId: 'manual', q: q.trim(), a: a.trim(), box: 0, due: Date.now() }] }));
+    setQ(''); setA(''); setNow(Date.now()); notify('Tarjeta agregada');
+  };
+  const del = id => { if (confirm('¿Borrar esta tarjeta?')) update(s => ({ ...s, cards: s.cards.filter(c => c.id !== id) })); };
+
+  return <>
+    <header className="page-head"><p className="eyebrow">Repaso espaciado</p><h1>Repaso</h1>
+      <p className="muted small">{due.length ? `${due.length} por repasar ahora · ${state.cards.length} en total` : `${state.cards.length} tarjetas en total`}</p></header>
+    {card ? <article className="card flash">
+      <div className="tag">Pregunta</div>
+      <div className="q"><Md text={card.q} /></div>
+      {show ? <>
+        <div className="answer"><Md text={card.a} /></div>
+        <p className="muted small" style={{ marginTop: 12 }}>¿Qué tan bien te acordaste?</p>
+        <div className="grade">
+          <button className="btn" onClick={() => grade('again')}>Otra vez</button>
+          <button className="btn primary" onClick={() => grade('good')}>Bien</button>
+          <button className="btn" onClick={() => grade('easy')}>Fácil</button>
+        </div>
+      </> : <button className="btn primary" style={{ marginTop: 12 }} onClick={() => setShow(true)}>Mostrar respuesta</button>}
+    </article> : <article className="card">
+      <h2>Nada por repasar ahora</h2>
+      <p className="muted">{upcoming ? `Próximo repaso: ${fmtDate(upcoming.due)}.` : 'Completa una lección para recibir tarjetas, o crea las tuyas abajo.'}</p>
+    </article>}
+
+    <details className="card">
+      <summary>Crear una tarjeta</summary>
+      <label className="field"><span>Pregunta</span><textarea rows={2} value={q} onChange={e => setQ(e.target.value)} /></label>
+      <label className="field"><span>Respuesta</span><textarea rows={3} value={a} onChange={e => setA(e.target.value)} /></label>
+      <button className="btn primary" disabled={!q.trim() || !a.trim()} onClick={addCard}>Agregar</button>
+    </details>
+    {state.cards.length > 0 && <details className="card">
+      <summary>Todas las tarjetas ({state.cards.length})</summary>
+      {[...state.cards].sort((x, y) => x.due - y.due).map(c => <div key={c.id} className="list-row">
+        <div className="t"><div><Md text={c.q} inline /></div><div className="muted small">Caja {c.box || 0} · {c.due <= now ? 'para hoy' : fmtDate(c.due)}</div></div>
+        <button className="btn sm danger" onClick={() => del(c.id)}>Borrar</button>
+      </div>)}
+    </details>}
+  </>;
+}
+
+function Journal({ state, update, notify, course }) {
+  // El diario se escribe al cierre de la semana: por defecto, la última lección completada.
+  const defaultWeek = () => {
+    if (!course) return 1;
+    const done = course.lessons.map(l => ({ l, p: state.progress[pkey(course.id, l.id)] })).filter(x => x.p && x.p.completedAt)
+      .sort((a, b) => b.p.completedAt - a.p.completedAt)[0];
+    const next = nextLesson(state, course);
+    const w = done ? done.l.week : next ? next.week : null;
+    return w != null ? w : 1;
+  };
+  const empty = () => ({ id: null, week: defaultWeek(), ...Object.fromEntries(JOURNAL_FIELDS.map(f => [f.key, ''])) });
+  const [form, setForm] = useState(empty);
+  const entries = [...state.journal].sort((a, b) => b.createdAt - a.createdAt);
+  const canSave = JOURNAL_FIELDS.some(f => (form[f.key] || '').trim());
+  const save = () => {
+    if (!canSave) return;
+    update(s => {
+      if (form.id) return { ...s, journal: s.journal.map(j => j.id === form.id ? { ...j, ...form, updatedAt: Date.now() } : j) };
+      return { ...s, journal: [...s.journal, { ...form, id: uid(), createdAt: Date.now() }] };
+    });
+    notify(form.id ? 'Entrada actualizada' : 'Entrada guardada'); setForm(empty());
+  };
+  const toMd = j => [`### Diario — semana ${j.week} (${fmtDate(j.createdAt)})`, ...JOURNAL_FIELDS.map(f => `- **${f.label}:** ${j[f.key] || '—'}`)].join('\n');
+  return <>
+    <header className="page-head"><p className="eyebrow">Diario técnico</p><h1>Diario</h1>
+      <p className="muted small">Cinco preguntas al cierre de cada semana. Esto alimenta tu memoria del programa y tu portafolio.</p></header>
+    <article className="card">
+      <h3>{form.id ? 'Editar entrada' : 'Nueva entrada'}</h3>
+      <label className="field"><span>Semana</span><input type="number" min="0" value={form.week} onChange={e => setForm({ ...form, week: Number(e.target.value) })} /></label>
+      {JOURNAL_FIELDS.map(f => <label key={f.key} className="field"><span>{f.label}</span>
+        <textarea rows={2} value={form[f.key] || ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })} /></label>)}
+      <div className="btns">
+        <button className="btn primary" disabled={!canSave} onClick={save}>{form.id ? 'Guardar cambios' : 'Guardar entrada'}</button>
+        {form.id && <button className="btn" onClick={() => setForm(empty())}>Cancelar</button>}
+      </div>
+    </article>
+    {entries.map(j => <article key={j.id} className="card">
+      <p className="eyebrow">Semana {j.week} · {fmtDate(j.createdAt)}</p>
+      <dl className="entry">{JOURNAL_FIELDS.filter(f => j[f.key]).map(f => <React.Fragment key={f.key}><dt>{f.label}</dt><dd>{j[f.key]}</dd></React.Fragment>)}</dl>
+      <div className="btns">
+        <button className="btn sm" onClick={async () => notify((await copyText(toMd(j))) ? 'Entrada copiada' : 'No se pudo copiar')}>Copiar</button>
+        <button className="btn sm" onClick={() => { setForm({ ...j }); window.scrollTo(0, 0); }}>Editar</button>
+        <button className="btn sm danger" onClick={() => { if (confirm('¿Borrar esta entrada?')) update(s => ({ ...s, journal: s.journal.filter(x => x.id !== j.id) })); }}>Borrar</button>
+      </div>
+    </article>)}
+  </>;
+}
+
+function More({ state, update, notify, go, course }) {
+  const [imp, setImp] = useState('');
+  const [err, setErr] = useState('');
+  const [nc, setNc] = useState({ title: '', description: '' });
+  const fileRef = useRef(null);
+
+  const doImport = text => {
+    setErr('');
+    try {
+      const r = importJson(text, state);
+      if (r.replaceAll && !confirm('Esto reemplaza TODOS tus datos actuales por los del respaldo. ¿Seguir?')) return;
+      update(() => r.state); setImp(''); notify(r.msg);
+    } catch (e) { setErr(e.message); }
+  };
+  const onFile = async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try { doImport(await readFile(f)); } catch (x) { setErr(x.message); }
+  };
+  const createCourse = () => {
+    if (!nc.title.trim()) return;
+    const c = { id: 'c-' + uid(), title: nc.title.trim(), description: nc.description.trim(), author: state.name || '', version: 1, edited: true, lessons: [] };
+    update(s => ({ ...s, courses: [...s.courses, c], activeCourseId: c.id }));
+    setNc({ title: '', description: '' }); notify('Curso creado y activado');
+  };
+  const removeCourse = c => {
+    if (!confirm(`¿Eliminar el curso "${c.title}" con su progreso y tarjetas? No se puede deshacer.`)) return;
+    update(s => {
+      const progress = Object.fromEntries(Object.entries(s.progress).filter(([k]) => !k.startsWith(c.id + '::')));
+      const courses = s.courses.filter(x => x.id !== c.id);
+      return { ...s, courses, progress, cards: s.cards.filter(x => x.courseId !== c.id), activeCourseId: s.activeCourseId === c.id ? (courses[0] ? courses[0].id : null) : s.activeCourseId };
+    });
+    notify('Curso eliminado');
+  };
+  const exportCourse = c => { const { edited, ...clean } = c; download(`curso-${c.id}.json`, clean); };
+  const backup = () => download(`aula-respaldo-${localDay()}.json`, { type: 'backup', app: 'aula', version: 1, exportedAt: new Date().toISOString(), data: state });
+
+  return <>
+    <header className="page-head"><p className="eyebrow">Instructor y ajustes</p><h1>Más</h1></header>
+
+    <article className="card">
+      <h3>Tu nombre</h3>
+      <input type="text" value={state.name} placeholder="¿Cómo te saludo?" onChange={e => { const v = e.target.value.slice(0, 40); update(s => ({ ...s, name: v })); }} />
+    </article>
+
+    <article className="card">
+      <h3>Cursos</h3>
+      {state.courses.length === 0 && <p className="muted">Todavía no hay cursos.</p>}
+      {state.courses.map(c => <div key={c.id} className="list-row">
+        <div className="t"><strong>{c.title}</strong><div className="muted small">{c.lessons.length} lecciones{c.id === state.activeCourseId ? ' · activo' : ''}</div></div>
+        <div className="btns" style={{ marginTop: 0, flexWrap: 'nowrap' }}>
+          {c.id !== state.activeCourseId && <button className="btn sm" onClick={() => update(s => ({ ...s, activeCourseId: c.id }))}>Activar</button>}
+          <button className="btn sm" onClick={() => exportCourse(c)}>Exportar</button>
+          <button className="btn sm danger" onClick={() => removeCourse(c)} aria-label={`Eliminar ${c.title}`}>✕</button>
+        </div>
+      </div>)}
+      <details style={{ marginTop: 8 }}>
+        <summary>Crear un curso nuevo</summary>
+        <label className="field"><span>Título</span><input type="text" value={nc.title} onChange={e => setNc({ ...nc, title: e.target.value })} /></label>
+        <label className="field"><span>Descripción</span><textarea rows={2} value={nc.description} onChange={e => setNc({ ...nc, description: e.target.value })} /></label>
+        <button className="btn primary" disabled={!nc.title.trim()} onClick={createCourse}>Crear curso</button>
+      </details>
+    </article>
+
+    {course && <article className="card">
+      <h3>Lecciones de “{course.title}”</h3>
+      {sortedLessons(course).map(l => <div key={l.id} className="list-row">
+        <div className="t">{l.week != null ? `S${l.week} · ` : ''}{l.title}{l.draft ? <span className="muted small"> · por cargar</span> : null}</div>
+        <button className="btn sm" onClick={() => go({ name: 'edit', cid: course.id, lid: l.id })}>Editar</button>
+      </div>)}
+      <div className="btns"><button className="btn" onClick={() => go({ name: 'edit', cid: course.id, lid: '__new' })}>Nueva lección</button></div>
+    </article>}
+
+    <article className="card">
+      <h3>Importar</h3>
+      <p className="muted small">Pega el JSON de un curso completo o de una lección (lo que te entrega Claude cada semana), o sube un archivo .json.</p>
+      <textarea className="mono" style={{ minHeight: 140 }} value={imp} onChange={e => setImp(e.target.value)} placeholder='{"type": "lesson", "lesson": { ... }}' aria-label="JSON a importar" />
+      {err && <p className="err">{err}</p>}
+      <div className="btns">
+        <button className="btn primary" disabled={!imp.trim()} onClick={() => doImport(imp)}>Importar</button>
+        <button className="btn" onClick={() => fileRef.current && fileRef.current.click()}>Subir archivo</button>
+        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onFile} />
+      </div>
+    </article>
+
+    <article className="card">
+      <h3>Respaldo</h3>
+      <p className="muted small">Tus datos viven <strong>solo en este dispositivo</strong>. Si borras los datos del navegador, se pierden. Descarga un respaldo cada semana y guárdalo en tu Drive (carpeta 00 Gobierno).</p>
+      <div className="btns">
+        <button className="btn" onClick={backup}>Descargar respaldo</button>
+        <button className="btn" onClick={() => fileRef.current && fileRef.current.click()}>Restaurar respaldo</button>
+      </div>
+    </article>
+
+    <article className="card">
+      <h3>Zona peligrosa</h3>
+      <button className="btn danger" onClick={() => {
+        if (!confirm('¿Borrar TODOS tus datos (progreso, tarjetas, diario y cursos)? Descarga un respaldo antes.')) return;
+        try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+        location.reload();
+      }}>Borrar todos los datos</button>
+    </article>
+    <p className="muted small" style={{ textAlign: 'center' }}>Aula v0.1 · versión personal de estudio</p>
+  </>;
+}
+
+const LESSON_TEMPLATE = c => ({
+  id: 'l-' + uid(),
+  week: ((sortedLessons(c).slice(-1)[0] || {}).week ?? 0) + 1,
+  phase: '',
+  title: 'Nueva lección',
+  summary: 'De qué trata, en una línea.',
+  minutes: 60,
+  sections: [{
+    title: 'Concepto',
+    blocks: [
+      { type: 'md', text: '## Título\n\nExplicación con **negrita** y `código`.' },
+      { type: 'quiz', id: 'q1', question: '¿Pregunta?', options: ['Opción A', 'Opción B', 'Opción C'], correct: 0, explain: 'Por qué es la A.' }
+    ]
+  }],
+  cards: [{ q: 'Pregunta de repaso', a: 'Respuesta' }]
+});
+const BLOCK_HELP = `Tipos de bloque:
+{ "type": "md", "text": "## Título\\n\\nTexto con **negrita**" }
+{ "type": "code", "lang": "kotlin", "caption": "opcional", "code": "fun main() {}" }
+{ "type": "primm", "id": "p1", "lang": "kotlin", "code": "...", "question": "¿Qué imprime?", "answer": "..." }
+{ "type": "recall", "id": "r1", "question": "Explica...", "answer": "..." }
+{ "type": "quiz", "id": "q1", "question": "...", "options": ["A","B"], "correct": 0, "explain": "..." }
+{ "type": "checklist", "id": "c1", "title": "opcional", "items": ["Paso 1", "Paso 2"] }
+{ "type": "task", "title": "...", "text": "..." }
+{ "type": "callout", "tone": "info | warn", "text": "..." }`;
+
+function EditLesson({ state, update, back, goTab, notify, cid, lid }) {
+  const course = state.courses.find(c => c.id === cid);
+  const isNew = lid === '__new';
+  const original = course && !isNew ? course.lessons.find(l => l.id === lid) : null;
+  const [text, setText] = useState(() => JSON.stringify(isNew ? LESSON_TEMPLATE(course) : (original || {}), null, 2));
+  const [err, setErr] = useState('');
+  if (!course || (!isNew && !original)) return <><BackBar onBack={back} /><p>No se encontró la lección.</p></>;
+
+  const save = () => {
+    let l;
+    try { l = JSON.parse(text); } catch (e) { setErr('JSON inválido: ' + e.message); return; }
+    const errs = validateLesson(l);
+    if (errs.length) { setErr(errs.slice(0, 8).join('\n')); return; }
+    const clash = course.lessons.some(x => x.id === l.id && (isNew || x.id !== lid));
+    if (clash) { setErr(`Ya existe otra lección con el id "${l.id}".`); return; }
+    update(s => ({ ...s, courses: s.courses.map(c => c.id !== cid ? c : { ...c, edited: true, lessons: isNew ? [...c.lessons, l] : c.lessons.map(x => x.id === lid ? l : x) }) }));
+    notify('Lección guardada'); back();
+  };
+  const del = () => {
+    if (!confirm('¿Eliminar esta lección? Tu progreso en ella también se borra.')) return;
+    update(s => {
+      const progress = { ...s.progress }; delete progress[pkey(cid, lid)];
+      return { ...s, progress, courses: s.courses.map(c => c.id !== cid ? c : { ...c, edited: true, lessons: c.lessons.filter(x => x.id !== lid) }) };
+    });
+    notify('Lección eliminada'); goTab({ name: 'more' });
+  };
+  return <>
+    <BackBar onBack={back} />
+    <header className="page-head"><p className="eyebrow">{course.title}</p><h1>{isNew ? 'Nueva lección' : 'Editar lección'}</h1>
+      <p className="muted small">La lección se edita en formato JSON. Lo normal es que Claude te la entregue lista y tú solo la pegues.</p></header>
+    <textarea className="mono" value={text} onChange={e => setText(e.target.value)} spellCheck={false} aria-label="JSON de la lección" />
+    {err && <p className="err">{err}</p>}
+    <div className="btns">
+      <button className="btn primary" onClick={save}>Guardar</button>
+      {!isNew && <button className="btn danger" onClick={del}>Eliminar lección</button>}
+    </div>
+    <details className="card"><summary>Ayuda: tipos de bloque</summary><pre className="code" style={{ marginTop: 8 }}><code>{BLOCK_HELP}</code></pre></details>
+  </>;
+}
+
+/* ---------- App ---------- */
+const TABS = [
+  { name: 'home', label: 'Inicio', icon: 'home' },
+  { name: 'program', label: 'Programa', icon: 'program' },
+  { name: 'review', label: 'Repaso', icon: 'review' },
+  { name: 'journal', label: 'Diario', icon: 'journal' },
+  { name: 'more', label: 'Más', icon: 'more' }
+];
+
+function App() {
+  const [state, setState] = useState(loadState);
+  const [route, setRoute] = useState(() => (history.state && history.state.name ? history.state : { name: 'home', depth: 0 }));
+  const [toast, setToast] = useState(null);
+  const [saveError, setSaveError] = useState(false);
+  const toastTimer = useRef(null);
+
+  useEffect(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); setSaveError(false); }
+    catch (e) { setSaveError(true); }
+  }, [state]);
+  useEffect(() => {
+    if (!history.state || !history.state.name) history.replaceState({ name: 'home', depth: 0 }, '');
+    const onPop = e => setRoute(e.state && e.state.name ? e.state : { name: 'home', depth: 0 });
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+  useEffect(() => { window.scrollTo(0, 0); }, [route.name, route.lid]);
+
+  const go = r => { const nr = { ...r, depth: (route.depth || 0) + 1 }; history.pushState(nr, ''); setRoute(nr); };
+  const goTab = r => { const nr = { ...r, depth: 0 }; history.replaceState(nr, ''); setRoute(nr); };
+  const back = () => { if ((route.depth || 0) > 0) history.back(); else goTab({ name: 'home' }); };
+  const notify = msg => { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 2800); };
+  const update = fn => setState(s => fn(s));
+  const markStudy = s => s.studyDays.includes(localDay()) ? s : { ...s, studyDays: [...s.studyDays, localDay()].slice(-500) };
+
+  const course = state.courses.find(c => c.id === state.activeCourseId) || null;
+  const dueCount = state.cards.filter(c => c.due <= Date.now()).length;
+  const ctx = { state, update, go, goTab, back, notify, markStudy, course };
+
+  let view;
+  switch (route.name) {
+    case 'program': view = <Program {...ctx} />; break;
+    case 'lesson': view = <Lesson {...ctx} key={route.cid + route.lid} cid={route.cid} lid={route.lid} />; break;
+    case 'review': view = <Review {...ctx} />; break;
+    case 'journal': view = <Journal {...ctx} />; break;
+    case 'more': view = <More {...ctx} />; break;
+    case 'edit': view = <EditLesson {...ctx} key={route.cid + route.lid} cid={route.cid} lid={route.lid} />; break;
+    default: view = <Home {...ctx} dueCount={dueCount} />;
+  }
+  const active = route.name === 'lesson' ? 'program' : route.name === 'edit' ? 'more' : route.name;
+
+  return <>
+    {saveError && <div className="banner bad">No se pudo guardar en este dispositivo. Descarga un respaldo en Más.</div>}
+    <main className="app">{view}</main>
+    <nav className="tabs" aria-label="Navegación principal">
+      {TABS.map(t => <button key={t.name} className={active === t.name ? 'on' : ''} aria-current={active === t.name ? 'page' : undefined} onClick={() => goTab({ name: t.name })}>
+        <Icon name={t.icon} />{t.label}
+        {t.name === 'review' && dueCount > 0 && <span className="badge">{dueCount}</span>}
+      </button>)}
+    </nav>
+    {toast && <div className="toast" role="status">{toast}</div>}
+  </>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+</script>
+</body>
+</html>
